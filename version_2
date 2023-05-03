@@ -1,0 +1,71 @@
+
+library(shiny)
+library(readr)
+
+ui <- fluidPage(
+  titlePanel("Vocabulary Quiz"),
+  sidebarLayout(
+    sidebarPanel(
+      fileInput("file", "Upload CSV File",
+                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+      numericInput("num_words", "Number of words:", 5, min = 1, max = 100),
+      actionButton("initialize", "Initialize Words")
+    ),
+    mainPanel(
+      h3("Words and Meanings"),
+      tableOutput("words_table")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  words <- reactiveValues(data = NULL, selected = NULL)
+  
+  observeEvent(input$file, {
+    words$data <- read_csv(input$file$datapath)
+  })
+  
+  observeEvent(input$initialize, {
+    if (is.null(words$data)) {
+      return(NULL)
+    }
+    words$selected <- words$data[sample(nrow(words$data), input$num_words), ]
+  })
+  
+  
+  output$words_table <- renderTable({
+    if (is.null(words$data)) {
+      return(NULL)
+    }
+    if (is.null(words$selected)) {
+      return(NULL)
+    }
+    
+    words_df <- words$selected
+    for (i in 1:nrow(words_df)) {
+      words_df$Meaning[i] <- as.character(actionButton(inputId = paste0("word_", i), label = "Show Meaning", class = "btn btn-primary"))
+    }
+    
+    return(words_df[, c("words", "Meaning")])
+  }, sanitize.text.function = function(x) x, include.rownames = FALSE, escape = FALSE)
+  
+  
+  observe({
+    if (is.null(words$selected)) {
+      return(NULL)
+    }
+    
+    lapply(1:nrow(words$selected), function(i) {
+      observeEvent(input[[paste0("word_", i)]], {
+        showModal(modalDialog(
+          title = paste("Meaning of", words$selected[i, "words"]),
+          paste("Meaning:", words$selected[i, "meaning"]),
+          easyClose = TRUE
+        ))
+      })
+    })
+  })
+}
+
+shinyApp(ui = ui, server = server)
+
