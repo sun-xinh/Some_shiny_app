@@ -1,0 +1,86 @@
+library(shiny)
+library(readr)
+library(httr)
+
+ui <- fluidPage(
+  titlePanel("Vocabulary Quiz"),
+  sidebarLayout(
+    sidebarPanel(
+      fileInput("file", "Upload CSV File",
+                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+      numericInput("num_words", "Number of words:", 5, min = 1, max = 100),
+      actionButton("initialize", "Initialize Words")
+    ),
+    mainPanel(
+      fluidRow(
+        column(6,
+               h3("Words:"),
+               uiOutput("word_list")
+        ),
+        column(6,
+               h3("Meaning(s):"),
+               verbatimTextOutput("meaning"),
+               h3("Pronunciation:"),
+               uiOutput("pronounce_word")
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  words <- reactiveValues(data = NULL, selected = NULL)
+  
+  observeEvent(input$file, {
+    words$data <- read_csv(input$file$datapath)
+  })
+  
+  observeEvent(input$initialize, {
+    if (is.null(words$data)) {
+      return(NULL)
+    }
+    words$selected <- words$data[sample(nrow(words$data), input$num_words), ]
+  })
+  
+  output$word_list <- renderUI({
+    if (is.null(words$selected)) {
+      return(NULL)
+    }
+    word_buttons <- lapply(1:nrow(words$selected), function(i) {
+      actionButton(paste0("word_", i), words$selected[i, "words"])
+    })
+    do.call(tagList, word_buttons)
+  })
+  
+  output$meaning <- renderText({
+    clicked_word <- NULL
+    for (i in 1:nrow(words$selected)) {
+      if (input[[paste0("word_", i)]] > 0) {
+        clicked_word <- words$selected[i, "words"]
+        break
+      }
+    }
+    if (is.null(clicked_word)) {
+      return(NULL)
+    }
+    meaning <- words$selected[words$selected$words == clicked_word, "meaning"]
+    paste("Meaning:", meaning)
+  })
+  
+  output$pronounce_word <- renderUI({
+    clicked_word <- NULL
+    for (i in 1:nrow(words$selected)) {
+      if (input[[paste0("word_", i)]] > 0) {
+        clicked_word <- words$selected[i, "words"]
+        break
+      }
+    }
+    if (is.null(clicked_word)) {
+      return(NULL)
+    }
+    google_tts_url <- sprintf("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=%s&tl=en&total=1&idx=0", clicked_word)
+    tags$audio(src = google_tts_url, type = "audio/mpeg", controls = NA)
+  })
+}
+
+shinyApp(ui = ui, server = server)
