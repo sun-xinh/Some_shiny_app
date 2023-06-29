@@ -173,7 +173,8 @@ server <- function(input, output) {
   
   output$genePlots <- renderPlot({
     req(plots(),dds_data())
-    dds <- dds_data()  
+    dds <- dds_data() 
+    coldata <- colData(dds)
     par(mfrow=c(2,ceiling(input$n_plots/2)))
     for (gene in plots()) {
       plot(factor(coldata$feature1), log(assay(dds)[gene,]), main = gene)
@@ -225,20 +226,20 @@ server <- function(input, output) {
     req(PCA_plot())
   })
   
-  observeEvent(input$heatmap, {
-    output$heatPlot <- renderPlot({
-      req(dds_data(), filtered_results())
-      dds <- dds_data()
-      de_genes <- filtered_results()
-      vds = vst(dds)
-      counts_vst = assay(vds)
-      
-      de_counts_vst = counts_vst[rownames(de_genes),]
-      col_annot = as.data.frame(colData(dds)[,-1])
-      print(str(de_counts_vst))
-      pheatmap(de_counts_vst, annotation_col = col_annot, show_rownames = FALSE)
-    })
-  })
+  # observeEvent(input$heatmap, {
+  #   output$heatPlot <- renderPlot({
+  #     req(dds_data(), filtered_results())
+  #     dds <- dds_data()
+  #     de_genes <- filtered_results()
+  #     vds = vst(dds)
+  #     counts_vst = assay(vds)
+  #     
+  #     de_counts_vst = counts_vst[rownames(de_genes),]
+  #     col_annot = as.data.frame(colData(dds)[,-1])
+  #     print(str(de_counts_vst))
+  #     pheatmap(de_counts_vst, annotation_col = col_annot, show_rownames = FALSE)
+  #   })
+  # })
   
   
 }
@@ -249,8 +250,3 @@ shinyApp(ui = ui, server = server)
 
 
 
-num [1:467, 1:22] 8.13 7.68 7.28 8.98 6.91 ...
-- attr(*, "dimnames")=List of 2
-..$ : chr [1:467] "ENSMUSG00000025473_Adam8" "ENSMUSG00000040899_Ccr6" "ENSMUSG00000015396_Cd83" "ENSMUSG00000037894_H2az1" ...
-..$ : chr [1:22] "SAMEA5606704" "SAMEA5606705" "SAMEA5606706" "SAMEA5606707" ...
-NULL
