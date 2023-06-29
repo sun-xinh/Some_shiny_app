@@ -1,0 +1,36 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.shiny-input-container {
+    margin-bottom: 20px;
+}
+
+.shiny-text-output {
+    font-weight: bold;
+    color: darkblue;
+}
+
+.well {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.action-button {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+    margin-top: 10px;
+}
+
+.action-button:hover {
+    color: #fff;
+    background-color: #286090;
+    border-color: #204d74;
+}
+

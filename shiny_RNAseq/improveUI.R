@@ -13,6 +13,7 @@ options(shiny.maxRequestSize = 50*1024^2)
 
 
 ui <- fluidPage(
+  includeCSS("../css/first.css"),
   titlePanel("Upload CSV Files and Perform DESeq2 Analysis"),
   tabsetPanel(
     tabPanel("Data Upload",
@@ -39,19 +40,28 @@ ui <- fluidPage(
                actionButton("filter", "Filter The genes"),
                tableOutput("filteredTable"),
                downloadButton('downloadFiltered', 'Download Filtered Results'),
-               actionButton("plot", "Plot Top Genes"),
-               numericInput("n_plots", "Number of genes to plot (1-10)", value = 10, min = 1, max = 10),
-               plotOutput("genePlots"),
-               actionButton("volcano", "Volcano Plot"),
-               plotOutput("volcanoPlot"),
-               actionButton("pca", "PCA Plot"),
-               plotOutput("pcaPlot"),
-               actionButton("heatmap", "heatmap Plot"),
-               plotOutput("heatPlot")
+             )
+    ),
+    tabPanel("Plots",
+             sidebarLayout(
+               sidebarPanel(
+                 actionButton("plot", "Plot Top Genes"),
+                 numericInput("n_plots", "Number of genes to plot (1-10)", value = 10, min = 1, max = 10),
+                 actionButton("volcano", "Volcano Plot"),
+                 actionButton("pca", "PCA Plot"),
+                 actionButton("heatmap", "heatmap Plot")
+               ),
+               mainPanel(
+                 plotOutput("genePlots"),
+                 plotOutput("volcanoPlot"),
+                 plotOutput("pcaPlot"),
+                 plotOutput("heatPlot")
+               )
              )
     )
   )
 )
+
 
 
 
